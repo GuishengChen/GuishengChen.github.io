@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8'/>
+<script src='tank.js'></script>
+</head>
+<body onkeydown="changeDirect()">
+<h1 style="color: #0714b9;">html5 Tank Game---Guisheng Chen</h1>
+<div style="margin: 30px">
+    <canvas id='tankMap' width='500px' height='300px' style='background-color:#3e0549;'>
+        your web browser does not support the canvas tag.
+    </canvas>
+</div>
+<div id='add1'></div>
+<div id='add2'></div>
+<div id='add3'></div>
+<div style="margin: 30px;font-size: 12px">
+    <p style="font-size: 20px;">use w s a d or ↑ ↓ ← → to contral tank<br/>j or Enter to shoot</p>
+</div>
+</body>
+<script>
+    //define the map
+    var canvas = document.getElementById('tankMap');
+    var ctx = canvas.getContext('2d');
+
+    
+    var bombs = new Array();
+    var hero = new Hero(380,260,0,heroColor);
+    var enemyTanks = new Array();
+
+    //make new bullets 
+    var enemyBullets = new Array();
+    for(var i=0;i<6;i++){
+        var enemyTank = new EnemyTank((i+1)*50,0,2,enemyColor);
+        enemyTanks[i] = enemyTank;
+        //set a timer on enemy tanks to make it move 
+        var timer = window.setInterval("enemyTanks["+i+"].run()",50);
+        enemyTanks[i].timer = timer;
+        //set another timer to make enemy shoot
+        var enemyBullet = new Bullet(enemyTanks[i].x+9,enemyTanks[i].y+30,enemyTanks[i].direct,enemyTanks[i],'enemy');
+        enemyBullets.push(enemyBullet);
+        enemyBullets[i].timer = window.setInterval("enemyBullets["+i+"].run()",50);
+    }
+
+    //declare hero bullets
+    var heroBullets = new Array();
+    var heroBullet = null;
+    
+    if(hero.isLive){
+            drawTank(hero);
+        }
+
+   //reset the map, to clear the old movements
+    function flashMap(){
+        ctx.clearRect(0,0,500,300);
+        //if hero still alive draw hero
+        isHitHeroTank(enemyBullets,hero);
+        if(hero.isLive){
+            drawTank(hero);
+        }
+        
+        isHitEnemyTank(heroBullets,enemyTanks);
+        //draw hero bullets
+        drawHeroBullet(heroBullets);
+        //draw enemy bullets
+        drawEnemyBullet(enemyBullets,enemyTanks);
+        for(var i=0;i<6;i++){
+            if(enemyTanks[i].isLive){
+                drawTank(enemyTanks[i]);
+            }
+        }
+
+        //draw bomn image
+        for(var k=0;k<bombs.length;k++){
+            var img = new Image();
+            img.src = 'bomb.jpg';
+            var x = bombs[k].x;
+            var y = bombs[k].y;
+            ctx.drawImage(img,x,y,30,30);
+            ctx.drawImage(img,x,y,40,35);
+            ctx.drawImage(img,x,y,35,40);
+            bombs.splice(k,1);
+        }
+    }
+
+    function changeDirect(){
+        var keycode = event.keyCode;
+        switch(keycode){
+            case 38:;
+            case 87:hero.moveUp();break;
+            case 39:;
+            case 68:hero.moveRight();break;
+            case 40:;
+            case 83:hero.moveBottom();break;
+            case 37:;
+            case 65:hero.moveLeft();break;
+            case 74:;
+            case 13:hero.shotEnemy();break;
+        }
+        flashMap();
+    }
+    window.setInterval("flashMap()",50);
+</script>
+</html>
